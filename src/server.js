@@ -15,11 +15,25 @@ const handleListen = () => console.log('Listening on http://localhost:3000')
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
 
+const sockets = [];
+
 wss.on("connection", (socket) => {
+    sockets.push(socket)
+    socket["nickname"] = 'Anon'
     console.log('Connected to Browser✔');
-    socket.on('close', () => console.log('Disconnect to Browser❌'))
-    socket.on('message', (message) => {
-        socket.send(message.toString('utf-8'));
+    socket.on('close', () => {
+        console.log('Disconnect to Browser❌')        
+    })
+    socket.on('message', (msg) => {
+        const message = JSON.parse(msg)
+        switch(message.type){
+            case "new_message":
+                messageDataArr.push(`${socket.nickname} : ${message.payload}`)
+                sockets.forEach(aSocket => aSocket.send(`${socket.nickname} : ${message.payload}`))
+                break;
+            case "nickname":                
+                socket["nickname"] = message.payload
+        }       
     })    
 })
 
