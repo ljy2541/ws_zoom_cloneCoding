@@ -149,9 +149,24 @@ socket.on("ice", (ice) => {
 // RTC Code
 
 function makeConnection() {
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [{
+      urls: [ "stun:ntk-turn-1.xirsys.com" ]
+   }, {
+      username: "i7yG09XceYL2iAXAmXA4KBp-oUbCbEs9w_9DFa-svTti91JVA0QzXpqtes40nleiAAAAAGPHWYNqeWxlZQ==",
+      credential: "eb7024e0-96d7-11ed-b09b-0242ac120004",
+      urls: [
+          "turn:ntk-turn-1.xirsys.com:80?transport=udp",
+          "turn:ntk-turn-1.xirsys.com:3478?transport=udp",
+          "turn:ntk-turn-1.xirsys.com:80?transport=tcp",
+          "turn:ntk-turn-1.xirsys.com:3478?transport=tcp",
+          "turns:ntk-turn-1.xirsys.com:443?transport=tcp",
+          "turns:ntk-turn-1.xirsys.com:5349?transport=tcp"
+      ]
+   }]
+  });
   myPeerConnection.addEventListener("icecandidate", handleIce);
-  myPeerConnection.addEventListener("addstream", handleAddStream);
+  myPeerConnection.addEventListener("track", handleTrack);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
@@ -162,7 +177,8 @@ function handleIce(data) {
   socket.emit("ice", data.candidate, roomName);
 }
 
-function handleAddStream(data) {
-  const peerFace = document.getElementById("peerFace");
-  peerFace.srcObject = data.stream;
+function handleTrack(data) {
+  console.log("handle track")
+  const peerFace = document.querySelector("#peerFace")
+  peerFace.srcObject = data.streams[0]
 }
